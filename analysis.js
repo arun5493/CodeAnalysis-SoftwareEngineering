@@ -194,7 +194,7 @@ function depthFunc(childNode){
 	if(childNode.type != 'FunctionDeclaration'){
 
 		childNode = childNode.parent;
-		maxCondCount = depthFunc(childNode);
+		maxDepthCount = depthFunc(childNode);
 	}
 	return maxDepthCount;
 }
