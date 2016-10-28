@@ -3,6 +3,7 @@ var options = {tokens:true, tolerant: true, loc: true, range: true };
 var fs = require("fs");
 var count = 0;
 var maxCondCount = 0;
+var maxDepthCount = 0;
 function main()
 {
 	var args = process.argv.slice(2);
@@ -163,7 +164,13 @@ function complexity(filePath)
 						if(x>builder.MaxConditions){
 							builder.MaxConditions = x;
 						}
-				}				
+				}
+				if (!isDecision(child)){
+					maxDepthCount = 0;
+                    var x = depthFunc(child);
+                    if (x > builder.MaxNestingDepth)
+                        builder.MaxNestingDepth = x;
+                }				
 		});
 				
 		}
@@ -179,14 +186,22 @@ function complexity(filePath)
 	
 }
 function depthFunc(childNode){
-	
+	var key, child;
+
+	if (isDecision(childNode))
+            maxDepthCount+=1;
+
+	if(childNode.type != 'FunctionDeclaration'){
+
+		childNode = childNode.parent;
+		maxCondCount = depthFunc(childNode);
+	}
+	return maxDepthCount;
 }
 
 function maxCond(childNode){
 	var key, child;
 	if(childNode.operator == '||' || childNode.operator == '&&'){
-	//  if(childNode.type == 'LogicalExpression'){
-	 	//console.log('inside member expression');
 		 maxCondCount+=1;
  	}
 	
@@ -198,7 +213,7 @@ function maxCond(childNode){
 			if (typeof child === 'object' && child !== null && key != 'parent') 
 			{
 				child.parent = childNode;
-				maxCondCount = maxCond(child,maxCondCount);
+				maxCondCount = maxCond(child);
 			}
 		}
 	}	
